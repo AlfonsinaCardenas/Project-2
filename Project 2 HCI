@@ -1,1 +1,275 @@
+import streamlit as st
+import requests
+import pandas as pd
+from datetime import datetime
+import altair as alt
 
+# Session state initialization
+if 'weather_data' not in st.session_state:
+    st.session_state['weather_data'] = None
+if 'forecast_data' not in st.session_state:
+    st.session_state['forecast_data'] = None
+if 'selected_location' not in st.session_state:
+    st.session_state['selected_location'] = None
+if 'lat' not in st.session_state:
+    st.session_state['lat'] = None
+if 'lon' not in st.session_state:
+    st.session_state['lon'] = None
+if 'weather_fetched' not in st.session_state:
+    st.session_state['weather_fetched'] = False  # Track if weather data is fetched
+
+# Background color picker
+bg_color = st.sidebar.color_picker("Pick background color", "#9fe1f1")  # default light blue
+st.markdown(
+    f"""
+    <style>
+    .stApp {{
+        background-color: {bg_color};
+    }}
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+st.title("🌤️ Weather 🌤️")
+
+API_KEY = "104b05380355d114211b792c6e638369"  # Your actual API key
+
+
+# Function to get latitude and longitude based on location
+def get_location_coordinates(location_input):
+    geo_url = f"http://api.openweathermap.org/geo/1.0/direct?q={location_input}&limit=5&appid={API_KEY}"
+    try:
+        geo_response = requests.get(geo_url)
+        geo_response.raise_for_status()
+        locations = geo_response.json()
+
+        if not locations:
+            st.error("No matching locations found. Please check your input.")
+            return None, None
+        else:
+            # Provide location options to the user to select
+            options = [
+                f"{loc.get('name', '')}, {loc.get('state', '') + ', ' if loc.get('state') else ''}{loc.get('country', '')}"
+                for loc in locations
+            ]
+
+            selected_location = st.selectbox("Select the correct location:", options)
+
+            # Store the selected location and coordinates in session state
+            idx = options.index(selected_location)
+            st.session_state['selected_location'] = selected_location
+            st.session_state['lat'] = locations[idx]['lat']
+            st.session_state['lon'] = locations[idx]['lon']
+
+            return locations[idx]['lat'], locations[idx]['lon']
+    except requests.exceptions.RequestException as e:
+        st.error(f"API request failed: {e}")
+        return None, None
+
+location_input = st.text_input("Enter location (city, state(optional), country code):", "Miami,FL,US")
+
+# Step 1: Fetch location options only if input changes
+if 'location_options' not in st.session_state or location_input != st.session_state.get('last_location_input', ''):
+    geo_url = f"http://api.openweathermap.org/geo/1.0/direct?q={location_input}&limit=5&appid={API_KEY}"
+    try:
+        geo_response = requests.get(geo_url)
+        geo_response.raise_for_status()
+        locations = geo_response.json()
+
+        if locations:
+            st.session_state['location_options'] = [
+                f"{loc.get('name', '')}, {loc.get('state', '') + ', ' if loc.get('state') else ''}{loc.get('country', '')}"
+                for loc in locations
+            ]
+            st.session_state['location_data'] = locations
+            st.session_state['last_location_input'] = location_input
+            st.session_state['location_selected'] = False  # Reset selection
+        else:
+            st.error("No matching locations found.")
+            st.stop()
+    except requests.exceptions.RequestException as e:
+        st.error(f"API request failed: {e}")
+        st.stop()
+
+# Step 2: Always show the dropdown if options exist
+if 'location_options' in st.session_state:
+    selected_location = st.selectbox("Select the correct location:", st.session_state['location_options'])
+
+    # Reset state when selection changes
+    if st.session_state.get('selected_location_dropdown') != selected_location:
+        st.session_state['weather_fetched'] = False  # Allow new data fetch
+        st.session_state['selected_location_dropdown'] = selected_location
+
+# Step 3: When "Get Weather" is clicked, lock in the selection and fetch data
+if st.button("Get Weather") and not st.session_state['weather_fetched']:
+    selected = st.session_state['selected_location_dropdown']
+    idx = st.session_state['location_options'].index(selected)
+    st.session_state['selected_location'] = selected
+    st.session_state['lat'] = st.session_state['location_data'][idx]['lat']
+    st.session_state['lon'] = st.session_state['location_data'][idx]['lon']
+    st.session_state['location_selected'] = True
+
+    lat = st.session_state['lat']
+    lon = st.session_state['lon']
+
+    weather_url = f"http://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&appid={API_KEY}&units=metric"
+    forecast_url = f"https://api.openweathermap.org/data/2.5/forecast?lat={lat}&lon={lon}&appid={API_KEY}&units=metric"
+
+    try:
+        weather_response = requests.get(weather_url)
+        forecast_response = requests.get(forecast_url)
+        weather_response.raise_for_status()
+        forecast_response.raise_for_status()
+
+        st.session_state['weather_data'] = weather_response.json()
+        st.session_state['forecast_data'] = forecast_response.json()
+        st.session_state['weather_fetched'] = True
+        st.success("Weather data loaded successfully!")
+
+    except requests.exceptions.RequestException as e:
+        st.error(f"Failed to fetch weather data: {e}")
+
+
+# Sidebar navigation for page selection
+page_selection = st.sidebar.radio(
+    "Select a Page",
+    ["Weather Details", "Forecast Graph"]
+)
+
+# Display selected page content based on sidebar navigation
+if page_selection == "Weather Details":
+    if st.session_state['weather_data']:
+        selected_location = st.session_state['selected_location']
+        lat = st.session_state['lat']
+        lon = st.session_state['lon']
+
+        st.subheader("📍 Location on Map")
+        st.map(pd.DataFrame({'lat': [lat], 'lon': [lon]}))
+
+        show_coordinates = st.checkbox("Click to see coordinates of this location")
+        if show_coordinates and lat and lon:
+            st.info(f"Latitude: {lat}, Longitude: {lon}")
+
+
+        st.subheader(f"Current Weather for {selected_location}")
+        st.write(f"**Temperature:** {st.session_state['weather_data']['main']['temp']} °C")
+        st.write(f"**Feels like:** {st.session_state['weather_data']['main']['feels_like']} °C")
+        st.write(f"**Humidity:** {st.session_state['weather_data']['main']['humidity']}%")
+        st.write(f"**Pressure:** {st.session_state['weather_data']['main']['pressure']} hPa")
+
+        description = st.session_state['weather_data']['weather'][0]['description']
+        description_lower = description.lower()
+
+        #Adding an emoji based on the weather using keywords. If no keyword found, default emoji
+        emoji = "🌈"
+        if "clear" in description_lower:
+            emoji = "☀️"
+        elif "cloud" in description_lower:
+            emoji = "☁️"
+        elif "rain" in description_lower:
+            emoji = "🌧️"
+        elif "thunder" in description_lower:
+            emoji = "🌩️"
+        elif "snow" in description_lower:
+            emoji = "❄️"
+        elif "mist" in description_lower or "fog" in description_lower:
+            emoji = "🌫️"
+        elif "drizzle" in description_lower:
+            emoji = "🌦️"
+        elif "haze" in description_lower:
+            emoji = "🌁"
+        elif "dust" in description_lower or "sand" in description_lower:
+            emoji = "🌪️"
+
+        st.write(f"**Weather:** {description.title()} {emoji}")
+        st.write(f"**Wind Speed:** {st.session_state['weather_data']['wind']['speed']} m/s")
+
+        # Display temperature table
+        temp_c = st.session_state['weather_data']['main']['temp']
+        feels_like_c = st.session_state['weather_data']['main']['feels_like']
+        temp_min_c = st.session_state['weather_data']['main']['temp_min']
+        temp_max_c = st.session_state['weather_data']['main']['temp_max']
+
+        temp_f = temp_c * 9 / 5 + 32
+        feels_like_f = feels_like_c * 9 / 5 + 32
+        temp_min_f = temp_min_c * 9 / 5 + 32
+        temp_max_f = temp_max_c * 9 / 5 + 32
+
+        temp_df = pd.DataFrame({
+            'Temperature Measurements': ['Temperature', 'Feels Like', 'Min Temp', 'Max Temp'],
+            'Metric (°C)': [f"{temp_c:.1f}", f"{feels_like_c:.1f}", f"{temp_min_c:.1f}", f"{temp_max_c:.1f}"],
+            'Imperial (°F)': [f"{temp_f:.1f}", f"{feels_like_f:.1f}", f"{temp_min_f:.1f}", f"{temp_max_f:.1f}"]
+        })
+
+        st.markdown(
+            """
+            <style>
+            table { width: 100%; }
+            th, td { text-align: center !important; }
+            </style>
+            """,
+            unsafe_allow_html=True
+        )
+        st.dataframe(temp_df)
+
+elif page_selection == "Forecast Graph":
+    # Display forecast chart based on dropdown selection
+    if st.session_state['forecast_data']:
+        forecast_data = st.session_state['forecast_data']
+        hourly = forecast_data['list'][:8]
+        times = [datetime.strptime(h['dt_txt'], '%Y-%m-%d %H:%M:%S') for h in hourly]
+        temps = [h['main']['temp'] for h in hourly]
+        humidity = [h['main']['humidity'] for h in hourly]
+        wind_speeds = [h['wind']['speed'] for h in hourly]
+
+        df_hourly = pd.DataFrame({
+            'Date': [t.strftime('%Y-%m-%d') for t in times],
+            'Time': [t.strftime('%I:%M %p') for t in times],
+            'Temperature (°C)': temps,
+            'Temperature (°F)': [f"{(t * 9 / 5) + 32:.2f}" for t in temps],
+            'Humidity (%)': humidity,
+            'Wind Speed (m/s)': wind_speeds
+        })
+
+        df_hourly['DateTime'] = [datetime.strptime(f"{d} {t}", '%Y-%m-%d %I:%M %p') for d, t in
+                                 zip(df_hourly['Date'], df_hourly['Time'])]
+        df_hourly = df_hourly.sort_values('DateTime')
+
+        metric = st.selectbox("Select metric to display (hourly forecast):", ['Temperature', 'Humidity', 'Wind Speed'])
+
+        if metric == 'Temperature':
+            y_col = 'Temperature (°C)'
+            tooltip = [
+                alt.Tooltip('Date', title='Date'),
+                alt.Tooltip('Time', title='Time'),
+                alt.Tooltip('Temperature (°C)', title='Temp (°C)'),
+                alt.Tooltip('Temperature (°F)', title='Temp (°F)'),
+            ]
+        elif metric == 'Humidity':
+            y_col = 'Humidity (%)'
+            tooltip = [
+                alt.Tooltip('Date', title='Date'),
+                alt.Tooltip('Time', title='Time'),
+                alt.Tooltip('Humidity (%)', title='Humidity (%)'),
+            ]
+        else:
+            y_col = 'Wind Speed (m/s)'
+            tooltip = [
+                alt.Tooltip('Date', title='Date'),
+                alt.Tooltip('Time', title='Time'),
+                alt.Tooltip('Wind Speed (m/s)', title='Wind Speed (m/s)'),
+            ]
+
+        chart = alt.Chart(df_hourly).mark_line(point=True).encode(
+            x=alt.X('DateTime:T', title='Time', axis=alt.Axis(format='%I:%M %p', labelAngle=-45)),
+            y=alt.Y(y_col, title=metric),
+            tooltip=tooltip
+        ).properties(
+            width=700,
+            height=400,
+            title=f"{metric} over Time"
+        )
+
+        st.altair_chart(chart, use_container_width=True)
+        st.info(f"Data retrieved on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
