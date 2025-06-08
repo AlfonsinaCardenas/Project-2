@@ -134,7 +134,7 @@ This project allowed me to apply what I’ve learned about UI/UX design and buil
 
 By combining API integration with interactive widgets like sliders, expanders, and color customization, I created a layout that’s both informative and easy to navigate. Every design decision, from the use of a select box to prevent crowding, to the inclusion of multiple metrics and personalized feedback, was made with the user experience in mind.
 
-In the future, I would like to explore more features of Streamlit, such as adding images. I tried adding a background image of a sky with clouds to make it seem more like a weather app, but I was not able to succeed. Therefore, I would like to work more on features like that and learn as much as I can. In addition, if I develop another weather app, I would include longer forecasts.
+In the future, I would like to explore more features of Streamlit, such as adding images. I tried adding a background image of a sky with clouds to make it seem more like a weather app, but I was not able to. Therefore, I would like to work more on features like that and learn as much as I can. In addition, if I develop another weather app, I would include longer forecasts.
 
 
 
