@@ -3,8 +3,9 @@ import requests
 import pandas as pd
 from datetime import datetime
 import altair as alt
+import numpy as np
 
-# Session state initialization
+# session state initialization
 if 'weather_data' not in st.session_state:
     st.session_state['weather_data'] = None
 if 'forecast_data' not in st.session_state:
@@ -16,10 +17,10 @@ if 'lat' not in st.session_state:
 if 'lon' not in st.session_state:
     st.session_state['lon'] = None
 if 'weather_fetched' not in st.session_state:
-    st.session_state['weather_fetched'] = False  # Track if weather data is fetched
+    st.session_state['weather_fetched'] = False
 
-# Background color picker
-bg_color = st.sidebar.color_picker("Pick background color", "#9fe1f1")  # default light blue
+# background color picker
+bg_color = st.sidebar.color_picker("Do you wish to change the background color? Click here 👇", "#9fe1f1")  # default light blue
 st.markdown(
     f"""
     <style>
@@ -32,11 +33,12 @@ st.markdown(
 )
 
 st.title("🌤️ Weather 🌤️")
+st.markdown("Welcome! Please select a location to begin.")
 
 API_KEY = "104b05380355d114211b792c6e638369"  # Your actual API key
 
 
-# Function to get latitude and longitude based on location
+# function to get latitude and longitude based on location, making the search more specific
 def get_location_coordinates(location_input):
     geo_url = f"http://api.openweathermap.org/geo/1.0/direct?q={location_input}&limit=5&appid={API_KEY}"
     try:
@@ -48,7 +50,7 @@ def get_location_coordinates(location_input):
             st.error("No matching locations found. Please check your input.")
             return None, None
         else:
-            # Provide location options to the user to select
+            #provide location options to the user to select, more specific!
             options = [
                 f"{loc.get('name', '')}, {loc.get('state', '') + ', ' if loc.get('state') else ''}{loc.get('country', '')}"
                 for loc in locations
@@ -56,7 +58,7 @@ def get_location_coordinates(location_input):
 
             selected_location = st.selectbox("Select the correct location:", options)
 
-            # Store the selected location and coordinates in session state
+            #store the selected location and coordinates in session state
             idx = options.index(selected_location)
             st.session_state['selected_location'] = selected_location
             st.session_state['lat'] = locations[idx]['lat']
@@ -69,7 +71,7 @@ def get_location_coordinates(location_input):
 
 location_input = st.text_input("Enter location (city, state(optional), country code):", "Miami,FL,US")
 
-# Step 1: Fetch location options only if input changes
+#fetch location options only if input changes
 if 'location_options' not in st.session_state or location_input != st.session_state.get('last_location_input', ''):
     geo_url = f"http://api.openweathermap.org/geo/1.0/direct?q={location_input}&limit=5&appid={API_KEY}"
     try:
@@ -84,24 +86,24 @@ if 'location_options' not in st.session_state or location_input != st.session_st
             ]
             st.session_state['location_data'] = locations
             st.session_state['last_location_input'] = location_input
-            st.session_state['location_selected'] = False  # Reset selection
+            st.session_state['location_selected'] = False
         else:
-            st.error("No matching locations found.")
+            st.error("No matching locations found. Please check your input and try again.")
             st.stop()
     except requests.exceptions.RequestException as e:
         st.error(f"API request failed: {e}")
         st.stop()
 
-# Step 2: Always show the dropdown if options exist
+# showing the dropdown if options exist
 if 'location_options' in st.session_state:
     selected_location = st.selectbox("Select the correct location:", st.session_state['location_options'])
 
-    # Reset state when selection changes
+    #resetting state when selection changes
     if st.session_state.get('selected_location_dropdown') != selected_location:
-        st.session_state['weather_fetched'] = False  # Allow new data fetch
+        st.session_state['weather_fetched'] = False  #allowing new data fetch
         st.session_state['selected_location_dropdown'] = selected_location
 
-# Step 3: When "Get Weather" is clicked, lock in the selection and fetch data
+# when the button is clicked, fetch the data - Requirement
 if st.button("Get Weather") and not st.session_state['weather_fetched']:
     selected = st.session_state['selected_location_dropdown']
     idx = st.session_state['location_options'].index(selected)
@@ -131,22 +133,25 @@ if st.button("Get Weather") and not st.session_state['weather_fetched']:
         st.error(f"Failed to fetch weather data: {e}")
 
 
-# Sidebar navigation for page selection
+# sidebar for page selection
 page_selection = st.sidebar.radio(
     "Select a Page",
-    ["Weather Details", "Forecast Graph"]
+    ["🌍 Weather Details", "📈 Forecast"]
 )
 
-# Display selected page content based on sidebar navigation
-if page_selection == "Weather Details":
+# displaying information for weather details
+if page_selection == "🌍 Weather Details":
+
     if st.session_state['weather_data']:
         selected_location = st.session_state['selected_location']
         lat = st.session_state['lat']
         lon = st.session_state['lon']
 
+        #map that shows the location the user picked - Requirement
         st.subheader("📍 Location on Map")
         st.map(pd.DataFrame({'lat': [lat], 'lon': [lon]}))
 
+        #option for the user to see the coordinates by clicking a checkbox - Requirement
         show_coordinates = st.checkbox("Click to see coordinates of this location")
         if show_coordinates and lat and lon:
             st.info(f"Latitude: {lat}, Longitude: {lon}")
@@ -161,7 +166,7 @@ if page_selection == "Weather Details":
         description = st.session_state['weather_data']['weather'][0]['description']
         description_lower = description.lower()
 
-        #Adding an emoji based on the weather using keywords. If no keyword found, default emoji
+        #adding an emoji based on the weather using keywords. If no keyword found, default emoji
         emoji = "🌈"
         if "clear" in description_lower:
             emoji = "☀️"
@@ -185,7 +190,7 @@ if page_selection == "Weather Details":
         st.write(f"**Weather:** {description.title()} {emoji}")
         st.write(f"**Wind Speed:** {st.session_state['weather_data']['wind']['speed']} m/s")
 
-        # Display temperature table
+        #information for chart
         temp_c = st.session_state['weather_data']['main']['temp']
         feels_like_c = st.session_state['weather_data']['main']['feels_like']
         temp_min_c = st.session_state['weather_data']['main']['temp_min']
@@ -195,6 +200,8 @@ if page_selection == "Weather Details":
         feels_like_f = feels_like_c * 9 / 5 + 32
         temp_min_f = temp_min_c * 9 / 5 + 32
         temp_max_f = temp_max_c * 9 / 5 + 32
+
+        st.subheader("Temperature Details (Celsius and Fahrenheit)")
 
         temp_df = pd.DataFrame({
             'Temperature Measurements': ['Temperature', 'Feels Like', 'Min Temp', 'Max Temp'],
@@ -211,17 +218,37 @@ if page_selection == "Weather Details":
             """,
             unsafe_allow_html=True
         )
+
+        #displaying table - Requirement
         st.dataframe(temp_df)
 
-elif page_selection == "Forecast Graph":
-    # Display forecast chart based on dropdown selection
+        st.write("📚 If you would like to see forecast data, please select 'Forecast' from the sidebar.")
+        st.info(f"Data retrieved on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+
+#page selection for forecast data
+elif page_selection == "📈 Forecast":
+
+    st.subheader("📅 Forecast")
+
+    #setting up metrics for the forecast graphs
     if st.session_state['forecast_data']:
         forecast_data = st.session_state['forecast_data']
         hourly = forecast_data['list'][:8]
         times = [datetime.strptime(h['dt_txt'], '%Y-%m-%d %H:%M:%S') for h in hourly]
-        temps = [h['main']['temp'] for h in hourly]
+        temps = np.array([h['main']['temp'] for h in hourly])
         humidity = [h['main']['humidity'] for h in hourly]
         wind_speeds = [h['wind']['speed'] for h in hourly]
+        precipitation = []
+        for h in hourly:
+            rain = h.get('rain', {}).get('3h', 0.0)
+            snow = h.get('snow', {}).get('3h', 0.0)
+            try:
+                total_precip = float(rain) + float(snow)
+            except (TypeError, ValueError):
+                total_precip = 0.0  # fallback if API returns something unexpected
+            precipitation.append(total_precip)
+        pressure = [h['main']['pressure'] for h in hourly]
+
 
         df_hourly = pd.DataFrame({
             'Date': [t.strftime('%Y-%m-%d') for t in times],
@@ -229,15 +256,20 @@ elif page_selection == "Forecast Graph":
             'Temperature (°C)': temps,
             'Temperature (°F)': [f"{(t * 9 / 5) + 32:.2f}" for t in temps],
             'Humidity (%)': humidity,
-            'Wind Speed (m/s)': wind_speeds
+            'Wind Speed (m/s)': wind_speeds,
+            'Precipitation (mm)': precipitation,
+            'Pressure (hPa)': pressure,
         })
 
         df_hourly['DateTime'] = [datetime.strptime(f"{d} {t}", '%Y-%m-%d %I:%M %p') for d, t in
                                  zip(df_hourly['Date'], df_hourly['Time'])]
         df_hourly = df_hourly.sort_values('DateTime')
 
-        metric = st.selectbox("Select metric to display (hourly forecast):", ['Temperature', 'Humidity', 'Wind Speed'])
+        st.markdown("**🔹 Select a metric you would like to explore!**")
+        metric = st.selectbox("Select a metric (hourly forecast):", ['Temperature', 'Humidity', 'Wind Speed','Precipitation','Pressure'])
 
+
+        #showing the data inside the graphs (place mouse over the points to get information)
         if metric == 'Temperature':
             y_col = 'Temperature (°C)'
             tooltip = [
@@ -253,13 +285,29 @@ elif page_selection == "Forecast Graph":
                 alt.Tooltip('Time', title='Time'),
                 alt.Tooltip('Humidity (%)', title='Humidity (%)'),
             ]
-        else:
+        elif metric == 'Wind Speed':
             y_col = 'Wind Speed (m/s)'
             tooltip = [
                 alt.Tooltip('Date', title='Date'),
                 alt.Tooltip('Time', title='Time'),
                 alt.Tooltip('Wind Speed (m/s)', title='Wind Speed (m/s)'),
             ]
+        elif metric == 'Precipitation':
+            y_col = 'Precipitation (mm)'
+            tooltip = [
+            alt.Tooltip('Date', title='Date'),
+            alt.Tooltip('Time', title='Time'),
+            alt.Tooltip('Precipitation (mm)', title='Precipitation (mm)'),
+            ]
+        else:
+            y_col = 'Pressure (hPa)'
+            tooltip = [
+                alt.Tooltip('Date', title='Date'),
+                alt.Tooltip('Time', title='Time'),
+                alt.Tooltip('Pressure (hPa)', title='Pressure (hPa)'),
+            ]
+
+
 
         chart = alt.Chart(df_hourly).mark_line(point=True).encode(
             x=alt.X('DateTime:T', title='Time', axis=alt.Axis(format='%I:%M %p', labelAngle=-45)),
@@ -271,5 +319,134 @@ elif page_selection == "Forecast Graph":
             title=f"{metric} over Time"
         )
 
+        #displaying chart - Requirement
         st.altair_chart(chart, use_container_width=True)
+
+
+        #information about each metric under graphs, with interactive sliders
+        with st.expander(f"ℹ️ Learn more about {metric}"):
+            if metric == 'Temperature':
+                st.markdown("""
+                        **🌡️ Temperature** shows how hot or cold the air will feel during the forecasted time period.  
+                        
+                        **🌈Fun Fact!**
+                        The coldest temperature ever recorded on Earth was −89.2 °C (−128.6 °F), in Antarctica!
+                        
+                        _Would you like to see how the air will feel depending on the temperature?_
+                        """)
+
+                temperature = st.slider("Select temperature (°C)", -5, 45, 20)
+
+                if temperature <= 0:
+                    st.info("❄️ Freezing — dress warmly to prevent frostbite.")
+                elif temperature <= 10:
+                    st.info("🥶 Cold — jacket weather; consider layering up.")
+                elif temperature <= 20:
+                    st.info("🧥 Cool — light jacket or sweater recommended.")
+                elif temperature <= 25:
+                    st.warning("😌 Comfortable — mild and pleasant temperature.")
+                elif temperature <= 30:
+                    st.warning("🌤️ Warm — stay hydrated and wear light clothing.")
+                else:
+                    st.error("🥵 Hot — avoid direct sun and take cooling breaks.")
+
+                st.write("🔄️ **To convert from Celsius to Fahrenheit, input the number here:**")
+                temp_c = st.number_input("Temperature (°C)", min_value=-100.0, max_value=100.0, value=20.0, step=0.1)
+                temp_f = (temp_c * 9 / 5) + 32
+
+                st.success(f"🌡️ {temp_c:.1f}°C is equal to {temp_f:.1f}°F")
+
+            if metric == 'Humidity':
+                st.markdown("""
+                        **💧 Humidity** is the amount of water vapor in the air, and it is measured as a percentage (%).  
+                    
+                        **🌈Fun Fact!**
+                        It is easier to detect smells in a humid environment, since there are more water molecules in the air that carry particles into our nose!
+                        
+                        _Would you like to see how each humidity percentage will feel like?_
+                        """)
+
+
+                humidity = st.slider("Select humidity level (%)", 0, 100, 50)
+
+                if humidity < 31:
+                    st.warning("🔥 Very dry air — can feel crisp or arid.")
+                elif humidity < 51:
+                    st.success("🌿 Comfortable and dry.")
+                elif humidity < 71:
+                    st.info("🌤️ Slightly humid — warm but tolerable.")
+                elif humidity < 86:
+                    st.warning("🌫️ Humid — sticky, sweaty feeling.")
+                else:
+                    st.error("🧪 Very humid — air feels heavy and damp.")
+
+            if metric == 'Wind Speed':
+                st.markdown("""
+                        **🍃 Wind Speed** means how fast the air is moving, measured in meters per second (m/s).    
+                        
+                        
+                        **🌈Fun Fact!**
+                        Once a storm's wind gets to about 33 m/s, it is considered a hurricane!
+                        
+                        _Would you like to see how different wind speeds feel?_
+                        """)
+                wind_speed = st.slider("Select wind speed (m/s)", 0.0, 15.0, 5.0, step=0.1)
+
+                if wind_speed <= 1.5:
+                    st.success("🍃 Calm — barely noticeable.")
+                elif wind_speed <= 3.5:
+                    st.success("💨 Light breeze — rustles leaves.")
+                elif wind_speed <= 8:
+                    st.info("🌬️ Moderate breeze — leaves sway.")
+                elif wind_speed <= 13.5:
+                    st.warning("🌪️ Strong breeze — noticeable resistance.")
+                else:
+                    st.error("🌀 Very strong wind — secure loose items!")
+            if metric == 'Precipitation':
+                st.markdown("""
+                    **☔ Precipitation (mm)** shows how much rain or snow is expected over each 3-hour period. It is measured in millimeters.  
+                    
+                    **🌈Fun Fact!**
+                    It takes a raindrop about 2 minutes to reach the ground!
+                    
+                    _Would you like to see what conditions you should expect based on the precipitation level?_
+                    """)
+
+
+                threshold = st.slider("Choose precipitation level (mm):", 0, 10, 1)
+
+
+                if threshold == 0:
+                    st.warning("☀️ Expect dry conditions.")
+                elif 1 <= threshold <= 2:
+                    st.info("🌦️ Light precipitation expected.")
+                elif 3 <= threshold <= 5:
+                    st.info("🌧️ Moderate precipitation expected.")
+                else:
+                    st.error("⛈️ Heavy precipitation likely.")
+
+            if metric == 'Pressure':
+                st.markdown("""
+                   **⬆️💨 Pressure** is the weight of the air pressing down on Earth’s surface, measured in hectopascals (hPa).  
+                   
+                   **🌈Fun Fact!**
+                   As altitude increases, pressure decreases. This causes available oxygen to also decrease, which is why mountain climbers need to use bottled oxygen to climb safely!
+                   
+                   _Would you like to see how pressure affects weather?_
+                   """)
+
+                pressure = st.slider("Select pressure level (hPa)", 980, 1040, 1013)
+
+                if pressure < 995:
+                    st.warning("🌧️ Very low pressure — possible stormy or unsettled weather.")
+                elif pressure < 1005:
+                    st.info("🌥️ Low pressure — clouds and possible rain.")
+                elif pressure <= 1025:
+                    st.success("⛅ Normal range — fair weather likely.")
+                else:
+                    st.warning("☀️ High pressure — clear, stable, and dry conditions.")
+
+        st.write("📚 If you would like to see current weather details, please select 'Weather Details' from the sidebar.")
+
+        #retrieving the date and time, ensures the data is current and up to date
         st.info(f"Data retrieved on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
