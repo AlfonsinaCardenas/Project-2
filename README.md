@@ -26,7 +26,7 @@ Learnability refers to how easy it is for new users to understand and begin usin
 
 **Memorability**
 
-When users return to the design after a period of time, they should find it easy to remember how to navigate the app. The design of the app is consistent and repeatable. The text box and select box process is simple, so they can immediately begin using the app and getting the weather. Also, the instructions at the top of each feature helps the user understand what to do.
+When users return to the design after a period of time, they should find it easy to remember how to navigate the app. The design of the app is consistent and repeatable. The text box and select box process is simple, so they can immediately begin using the app and getting the weather. Also, the instructions at the top of each feature help the user understand what to do.
 
 **Error Prevention**
 
@@ -40,13 +40,13 @@ User satisfaction describes how pleasant it is to use the design of the app. The
 
 ## Weather Details Page
 
-For the weather details page, I wanted to include the current weather information for a specific location chosen by the user.  When I tried the API with the text box, it would only let me write the city and the country, which would make it difficult for the user to find the specific location they were looking for since many cities around the country have the same name.  To fix this, I integrated the geocoding endpoint which allowed the user to write the name of the city, state, and country for a more specific search. Then, the select box let's us explore all the different states and even countries that have cities with the same name. For example, when we write "Rome" in the text box, the select box shows us options like "Rome, Lazio, IT" or "Rome, Georgia, US". The geocoding endpoint also provides the coordinates, which helped me create the map and the checkbox with said coordinates. 
+For the weather details page, I wanted to include the current weather information for a specific location chosen by the user.  When I tried the API with the text box, it would only let me write the city and the country, which would make it difficult for the user to find the specific location they were looking for since many cities around the country have the same name.  To fix this, I integrated the geocoding endpoint which allowed the user to write the name of the city, state, and country for a more specific search. Then, the select box lets us explore all the different states and even countries that have cities with the same name. For example, when we write "Rome" in the text box, the select box shows us options like "Rome, Lazio, IT" or "Rome, Georgia, US". The geocoding endpoint also provides the coordinates, which helped me create the map and the checkbox with said coordinates. 
 
-I decided to also add the color_picker widget because I did not like how it looked with a basic white background. Instead of making the decision myself of what color the web app should be, I gave the users the option to choose based on their own preference, making the app more flexible and interactive.
+I decided to also add the st.color_picker widget because I did not like how it looked with a basic white background. Instead of making the decision myself of what color the web app should be, I gave the users the option to choose based on their own preference, making the app more flexible and interactive.
 
 For weather, I did not want to show only the temperature, so I looked at other weather apps to see what other information I could provide.  I chose to add metrics such as humidity, pressure, wind speed, and the current weather, such as cloudy, clear, and rainy.
 
-Lastly, since people have their own preferences for temperature scales, I added an interactive table that provided the temperature, feels life, minimum, and maximum in both Celsius and Fahrenheit.
+Lastly, since people have their own preferences for temperature scales, I added an interactive table that provided the temperature, feels like, minimum, and maximum in both Celsius and Fahrenheit.
 
 ## Forecast Page
 
@@ -122,11 +122,11 @@ The web application uses success and error boxes to inform the user when the dat
 
 **Consistency**
 
-The web application looks similar accross all pages. The same layout is used, same fonts, and emojis and other icons are used all throughout.  This prevents confusion and ensures the user remains engaged. In the forecast page, the only thing that changes is the information depending on the metric the user chooses, but the overall layout stays the same with features like: line charts, expander for information, fun fact, and  slider.
+The web application looks similar across all pages. The same layout is used, same fonts, and emojis and other icons are used all throughout.  This prevents confusion and ensures the user remains engaged. In the forecast page, the only thing that changes is the information depending on which metric the user chooses, but the overall layout stays the same with features like: line charts, expander for information, fun fact, and  slider.
 
 **Flexibility**
 
-The web app allows the user to move freely.  They can interact with the app with actions such as: changing the background color, searching for different cities at any time, deciding whether or not they would like to see the coordinates, opening the expander for more information, and moving the sliders. In addition, the select box in the beginning gives the user an opportunity to explore the different cities around the world (and even country) that have the same name.
+The web app allows the user to move freely.  They can interact with the app with actions such as changing the background color, searching for different cities at any time, deciding whether or not they would like to see the coordinates, opening the expander for more information, and moving the sliders. In addition, the select box in the beginning gives the user an opportunity to explore the different cities around the world (and even country) that have the same name.
 
 # Conclusion
 
@@ -134,7 +134,7 @@ This project allowed me to apply what I’ve learned about UI/UX design and buil
 
 By combining API integration with interactive widgets like sliders, expanders, and color customization, I created a layout that’s both informative and easy to navigate. Every design decision, from the use of a select box to prevent crowding, to the inclusion of multiple metrics and personalized feedback, was made with the user experience in mind.
 
-In the future, I would like to explore more features of streamlit, such as adding images. I tried adding a background image of a sky with clouds to make it seem more like a weather app, but I was not able to succeed. Therefore, I would like to work more on features like that and learn as much as I can. In addition, if I develop another weather app, I would include longer forecasts.
+In the future, I would like to explore more features of Streamlit, such as adding images. I tried adding a background image of a sky with clouds to make it seem more like a weather app, but I was not able to succeed. Therefore, I would like to work more on features like that and learn as much as I can. In addition, if I develop another weather app, I would include longer forecasts.
 
 
 
