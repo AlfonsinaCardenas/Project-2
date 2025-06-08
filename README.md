@@ -75,24 +75,24 @@ I used the **OpenWeatherMap API** to retrieve data in real time. This API has mu
 # 🧩 Interactive Widgets and Streamlit Features
 
 - **Interactive Table (st.dataframe):** Used to show the current temperature, feels like, minimum, and maximum in both Celsius and Fahrenheit.
-- 
+  
 - **Line Chart (st.altair_chart):** Used to show the forecasts for temperature, humidity, wind speed, precipitation, and pressure.
-- 
+  
 - **Map (st.map):** Used to mark the user’s selected location on the map.
-- 
+  
 - **Button (st.button):** Used to trigger the API call and load weather data after the user confirms their selection.
-- 
+  
 - **Checkbox (st.checkbox):** Used to show the coordinates of the location selected by the user. 
   
 - **Feedback Message Boxes:**
-- 
-      - _success.st:_ Used to confirm when the data was loaded. Also for some of the feedback of the slider in forecast page.
   
-      - _st.info:_ Used to show the date and time at the end of each page. Also used in the slider in forecast page.
+  _success.st:_ Used to confirm when the data was loaded. Also for some of the feedback of the slider in forecast page.
+  
+  _st.info:_ Used to show the date and time at the end of each page. Also used in the slider in forecast page.
 
-      -_st.warning:_ Used in the sliders for forecast page. For example, when the weather selected was warm.
+  _st.warning:_ Used in the sliders for forecast page. For example, when the weather selected was warm.
 
-      -_st.error:_ Used to inform the user when the location written is not identified by the API. Also used for the forecast sliders (Hot weather, Strong winds).
+  _st.error:_ Used to inform the user when the location written is not identified by the API. Also used for the forecast sliders (Hot weather, Strong winds).
 
 - **Selectbox (st.selectbox):** Used to display a list of matching locations, which helps the user select the correct location if there is more than one city with the same name, such as Rome and Miami.
 
