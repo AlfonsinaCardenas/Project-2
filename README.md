@@ -94,7 +94,7 @@ I used the **OpenWeatherMap API** to retrieve data in real time. This API has mu
 
   _st.error:_ Used to inform the user when the location written is not identified by the API. Also used for the forecast sliders (Hot weather, Strong winds).
 
-- **Selectbox (st.selectbox):** Used to display a list of matching locations, which helps the user select the correct location if there is more than one city with the same name, such as Rome and Miami.
+- **Selectbox (st.selectbox):** Used to display a list of matching locations, which helps the user select the correct location if there is more than one city with the same name, such as Rome and Miami. It’s also used on the forecast page to select a weather metric, which then reveals the corresponding line chart.
 
 - **Slider (st.slider):** Used to help users explore how different weather metrics (e.g., temperature, humidity, wind speed) affect real-world conditions.
 
