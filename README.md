@@ -1,4 +1,4 @@
-# Project 2 - UI/UX Design with Streamlit Report 
+# 🌤️ Project 2 - UI/UX Design with Streamlit Report 
 
 **Name:** Alfonsina Cardenas
 
@@ -128,7 +128,7 @@ The web application looks similar across all pages. The same layout is used, sam
 
 The web app allows the user to move freely.  They can interact with the app with actions such as changing the background color, searching for different cities at any time, deciding whether or not they would like to see the coordinates, opening the expander for more information, and moving the sliders. In addition, the select box in the beginning gives the user an opportunity to explore the different cities around the world (and even country) that have the same name.
 
-# Conclusion
+# 💡 Conclusion
 
 This project allowed me to apply what I’ve learned about UI/UX design and build a functional, user-centered weather web app. My main goal was to make sure users could explore weather data in a way that felt smooth, clear, and engaging.
 
