@@ -136,6 +136,16 @@ By combining API integration with interactive widgets like sliders, expanders, a
 
 In the future, I would like to explore more features of Streamlit, such as adding images. I tried adding a background image of a sky with clouds to make it seem more like a weather app, but I was not able to. Therefore, I would like to work more on features like that and learn as much as I can. In addition, if I develop another weather app, I would include longer forecasts.
 
+# Executing
+
+To run the app, use the following command:
+
+    -streamlit run Project2.py
+
+# Youtube Link 
+
+    - Project 2 - UI/UX Design with Streamlit by Alfonsina Cardenas: https://youtu.be/54i55DJ9FZ0 
+
 
 
 
