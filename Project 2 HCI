@@ -35,7 +35,7 @@ st.markdown(
 st.title("🌤️ Weather 🌤️")
 st.markdown("Welcome! Please select a location to begin.")
 
-API_KEY = "104b05380355d114211b792c6e638369"  # Your actual API key
+API_KEY = "104b05380355d114211b792c6e638369"
 
 
 # function to get latitude and longitude based on location, making the search more specific
