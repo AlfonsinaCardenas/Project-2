@@ -142,11 +142,6 @@ To run the app, use the following command:
 
     streamlit run Project2.py
 
-# ▶️ Youtube Link 
-
-**Project 2 - UI/UX Design with Streamlit by Alfonsina Cardenas:**
-     https://youtu.be/54i55DJ9FZ0 
-
 
 
 
